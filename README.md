@@ -1,0 +1,1 @@
+Параграф 5.4 "Numerical Methods, Physical Plane, Steady Flow".
