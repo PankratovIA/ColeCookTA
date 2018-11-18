@@ -1,13 +1,15 @@
 import numpy as np
 
-width = 1.0
-heigth = 1.0
+WIDTH = 1.0
+HEIGTH = 1.0
 
 Nx = 3
 Ny = 3
+SIZE = Nx * Ny
+       
 
-dx = width / Nx
-dy = heigth / Ny
+dx = WIDTH / Nx
+dy = HEIGTH / Ny
 
 eps = 1e-9
 
@@ -34,18 +36,23 @@ if __name__ == "__main__":
     print("phi = \n{0}".format(phi))
     print("BC <<<")
     
+    iter = 0
     while 1:
-        size = Nx * Ny
+        iter += 1
+        print("Iteration {0}".format(iter))
         A = createMatrix(Nx, Ny)
-    
-        b = np.zeros((size, 1))
+        print("A = \n{0}".format(A))
+        print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
+        
+        b = np.zeros((SIZE, 1))
         for row in range(Ny):
             num = cellNum(row, 0)
-            A[num] = np.zeros((1, size))
+            A[num] = np.zeros((1, SIZE))
             A[num][num] = 1.0
             b[num] = 1.0
         
         print("A = \n{0}".format(A))
+        print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
         print("b = \n{0}".format(b))
     
         x = np.linalg.solve(A, b)
