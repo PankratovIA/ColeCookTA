@@ -4,8 +4,8 @@ np.set_printoptions(precision=3, suppress=True)
 WIDTH = 1.0
 HEIGTH = 1.0
 
-Nx = 3
-Ny = 3
+Nx = 5
+Ny = 5
 SIZE = Nx * Ny
        
 
@@ -57,7 +57,7 @@ def createMatrix(Nx, Ny):
                         A[num][cur] -= 1.0 / (dy * dy)
                     A[num][num] += 2.0 / (dy * dy)
                 else:
-                    print("Error")
+                    assert (1 == 2), "No formula..."
     return A
 
 def createBC(A):
