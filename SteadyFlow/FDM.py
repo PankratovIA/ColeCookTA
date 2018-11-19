@@ -13,17 +13,56 @@ dy = HEIGTH / Ny
 
 eps = 1e-9
 
-phi = np.zeros((Ny, Nx))
+phi = np.zeros((Ny+2, Nx+2))
 
 def cellNum(row, col):
-    assert 0<=row<Ny
-    assert 0<=col<Nx
-    return row * Ny + col
+    assert 1<=row<=Ny
+    assert 1<=col<=Nx
+    return (row - 1) * Ny + col - 1
     
 def createMatrix(Nx, Ny):
-    size = Nx * Ny
-    A = 2* np.eye(size)
+    #size = Nx * Ny
+    print("SIZE = ", SIZE)
+    A = 2* np.eye(SIZE)
+    A = np.zeros((SIZE, SIZE))
+    for row in range(1, Ny):
+        for col in range(1, Nx):
+            if not onBoundary(row, col):
+                num = cellNum(row, col)
+                A[num][num] = 10
     return A
+
+def createBC(A):
+    b = np.zeros((SIZE, 1))
+    for col in range(1, Nx+1):
+        # phi(x, 0) = 0
+        num = cellNum(1, col)
+        A[num] = np.zeros((1, SIZE))
+        A[num][num] = 1.0
+        b[num] = 0.0
+            
+        # phi(x, b) = 0
+        num = cellNum(Nx, col)
+        A[num] = np.zeros((1, SIZE))
+        A[num][num] = 1.0
+        b[num] = 0.0
+
+    for row in range(1, Ny+1):
+        # phi(0, y) = 1
+        num = cellNum(row, 1)
+        A[num] = np.zeros((1, SIZE))
+        A[num][num] = 1.0
+        b[num] = 1.0
+           
+        # phi(a, y) = 0
+        num = cellNum(row, Nx)
+        A[num] = np.zeros((1, SIZE))
+        A[num][num] = 1.0
+        b[num] = 0.0
+    return (A, b)
+    
+def onBoundary(row, col):
+    return (min(row, col) == 1) | (row == Ny) | (col == Nx)
 
 if __name__ == "__main__":
     print("FDM Transonic steady flow")
@@ -31,8 +70,9 @@ if __name__ == "__main__":
     print("dy = {0}".format(dy, "%f0.3"))
     print("phi = \n{0}".format(phi))
     print("BC >>>")
-    for i in range(Ny):
+    for i in range(Ny+2):
         phi[i][0] = 1.0
+        phi[i][1] = 1.0
     print("phi = \n{0}".format(phi))
     print("BC <<<")
     
@@ -44,12 +84,7 @@ if __name__ == "__main__":
         print("A = \n{0}".format(A))
         print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
         
-        b = np.zeros((SIZE, 1))
-        for row in range(Ny):
-            num = cellNum(row, 0)
-            A[num] = np.zeros((1, SIZE))
-            A[num][num] = 1.0
-            b[num] = 1.0
+        A, b = createBC(A)
         
         print("A = \n{0}".format(A))
         print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
@@ -59,8 +94,8 @@ if __name__ == "__main__":
         print("x = \n{0}".format(x))
         
         mx = 0
-        for row in range(Ny):
-            for col in range(Nx):
+        for row in range(1, Ny+1):
+            for col in range(1, Nx+1):
                 num = cellNum(row, col)
                 diff = abs(phi[row][col] - x[num])
                 mx = max(mx, diff)
