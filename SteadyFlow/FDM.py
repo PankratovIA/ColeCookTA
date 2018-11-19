@@ -4,8 +4,8 @@ np.set_printoptions(precision=3, suppress=True)
 WIDTH = 1.0
 HEIGTH = 1.0
 
-Nx = 5
-Ny = 5
+Nx = 9
+Ny = 9
 SIZE = Nx * Ny
        
 
@@ -17,6 +17,10 @@ eps = 1e-9
 phi = np.zeros((Ny+2, Nx+2))
 
 phi = np.random.rand(Ny+2, Nx+2)
+
+for idx in range(len(phi)):
+    phi[idx] = sorted(phi[idx], reverse = True)
+    
 
 def cellNum(t):
     # print( t, Nx, Ny)
