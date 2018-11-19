@@ -4,8 +4,8 @@ np.set_printoptions(precision=3, suppress=True)
 WIDTH = 1.0
 HEIGTH = 1.0
 
-Nx = 5
-Ny = 5
+Nx = 3
+Ny = 3
 SIZE = Nx * Ny
        
 
@@ -19,10 +19,13 @@ phi = np.zeros((Ny+2, Nx+2))
 phi = np.random.rand(Ny+2, Nx+2)
 
 def cellNum(t):
+    # print( t, Nx, Ny)
     row, col = t
     assert 1<=row<=Ny
     assert 1<=col<=Nx
-    return (row - 1) * Ny + col - 1
+    ans = (row - 1) * Nx + col - 1
+    # print(ans)
+    return ans
     
 def createMatrix(Nx, Ny):
     #size = Nx * Ny
@@ -67,7 +70,7 @@ def createBC(A):
         b[num] = 0.0
             
         # phi(x, b) = 0
-        num = cellNum((Nx, col))
+        num = cellNum((Ny, col))
         A[num] = np.zeros((1, SIZE))
         A[num][num] = 1.0
         b[num] = 0.0
