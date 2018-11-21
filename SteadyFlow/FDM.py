@@ -1,5 +1,5 @@
 import numpy as np
-np.set_printoptions(precision=6, suppress=True)
+np.set_printoptions(formatter={'float': '{: 0.3f}'.format}, suppress=True)
 
 WIDTH = 1.0
 HEIGTH = 1.0
@@ -150,21 +150,21 @@ if __name__ == "__main__":
     print("dy = {0}".format(dy, "%f0.3"))
     print("phi = \n{0}".format(phi))
     print("BC >>>")
-    for i in range(Ny+2):
-        phi[i][0] = 1.0
+    for i in range(1, Ny+1):
         phi[i][1] = 1.0
-        
         phi[i][Nx] = 0.0
-        phi[i][Nx+1] = 0.0
-        
         
     for i in range(2, Nx+2):
-        phi[0][i] = 0.0
         phi[1][i] = 0.0
-        
         phi[Ny][i] = 0.0
-        phi[Ny+1][i] = 0.0
+
+    for i in range(1, Ny+1):
+        phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
+        phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
         
+    for i in range(1, Nx+2):
+        phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
+        phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
     print("phi = \n{0}".format(phi))
     print("BC <<<")
     
@@ -192,8 +192,21 @@ if __name__ == "__main__":
                 diff = abs(phi[row][col] - x[num])
                 mx = max(mx, diff)
                 phi[row][col] = x[num]
+        print("BC >>>")
+        for i in range(1, Ny+1):
+            phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
+            phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
+        
+        for i in range(1, Nx+2):
+            phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
+            phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
+        print("phi = \n{0}".format(phi))
+        print("BC <<<")
         print("mx = {0}".format(mx, "%.3f"))
         if mx < eps:
             break
     print("iter = ", iter)
-    print("Result phi = \n{0}".format(phi))
+    #print("Result phi = \n{0}".format(phi))
+    print("Result phi")
+    for row in phi[1:-1:]:
+        print(row[1:-1:])
