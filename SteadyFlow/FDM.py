@@ -1,11 +1,11 @@
 import numpy as np
-np.set_printoptions(precision=3, suppress=True)
+np.set_printoptions(precision=6, suppress=True)
 
 WIDTH = 1.0
 HEIGTH = 1.0
 
-Nx = 9
-Ny = 9
+Nx = 5
+Ny = 5
 SIZE = Nx * Ny
        
 
@@ -18,8 +18,9 @@ phi = np.zeros((Ny+2, Nx+2))
 
 phi = np.random.rand(Ny+2, Nx+2)
 
-for idx in range(len(phi)):
-    phi[idx] = sorted(phi[idx], reverse = True)
+#for idx in range(len(phi)):
+    #phi[idx] = sorted(phi[idx], reverse = True)
+    #phi[idx] = sorted(phi[idx])
     
 
 def cellNum(t):
@@ -43,14 +44,14 @@ def createMatrix(Nx, Ny):
                 #A[num][num] = 10
                 
                 phi_xc = (phi[row][col+1] - phi[row][col-1]) / (2 * dx)
-                print("phi_xc =", phi_xc)
+                #print("phi_xc =", phi_xc)
                 
                 phi_xb = (phi[row][col] - phi[row][col-2]) / (2 * dx)
-                print("phi_xb =", phi_xb)
+                #print("phi_xb =", phi_xb)
                 
-                if (phi_xb < 0) & (phi_xc < 0):
+                if (phi_xc <= 0) & (phi_xb <= 0):
                     # elliptic (5.4.6)
-                    print(row, col, "elliptic (5.4.6)")
+                    # print(row, col, "elliptic (5.4.6)")
                     first = map(cellNum, [(row, col+1), (row, col-1)])
                     for cur in first:
                         A[num][cur] += phi_xc / (dx * dx)
@@ -60,8 +61,55 @@ def createMatrix(Nx, Ny):
                     for cur in second:
                         A[num][cur] -= 1.0 / (dy * dy)
                     A[num][num] += 2.0 / (dy * dy)
-                else:
-                    assert (1 == 2), "No formula..."
+                    continue
+                
+                if (phi_xc >= 0) & (phi_xb >= 0):
+                    # hyperbolic (5.4.10)
+                    #assert (1 == 2), "Hyperbolic"
+                    print(row, col, "hyperbolic (5.4.10)")
+                    A[num][num] += phi_xb / (dx * dx) + 2.0 / (dy * dy) # i, j
+                    cur = cellNum((row, col-1)) # i-1, j
+                    A[num][cur] -= 2.0 * phi_xb / (dx * dx)
+                    cur = cellNum((row, col-2)) # i-2, j
+                    A[num][cur] += phi_xb / (dx * dx)
+                    cur = cellNum((row+1, col)) # i, j+1
+                    A[num][cur] -= 1.0 / (dy * dy)
+                    cur = cellNum((row-1, col)) # i, j-1
+                    A[num][cur] -= 1.0 / (dy * dy)
+                    continue
+                                        
+                if (phi_xc >= 0) & (phi_xb <= 0):
+                    # sonic (5.4.13)
+                    # Error in (5.4.13), see computational star 5.4.4
+                    #assert (1 == 2), "Sonic"
+                    print(row, col, "sonic (5.4.13)")
+                    for cur in map(cellNum, [(row-1, col), (row+1, col)]):
+                        A[num][cur] += 1.0 / (dy * dy)
+                    A[num][num] -= 1.0 / (dy * dy)
+                    continue
+                    
+                if (phi_xc <= 0) & (phi_xb >= 0):
+                    # shock (5.4.14)
+                    print(row, col, "shock (5.4.14)")
+                    #assert (1 == 2), "Shock"
+                    tmp = phi[row][col+1] - phi[row][col] + phi[row][col-1]-phi[row][col-2]
+                    tmp /= (2.0 * dx)
+                    
+                    cur = cellNum((row, col+1)) # i+1, j
+                    A[num][cur] += tmp / (dx * dx)
+                    A[num][num] += -tmp / (dx * dx) + 2.0 / (dy * dy) # i,j
+                    cur = cellNum((row, col-1)) # i-1, j
+                    A[num][cur] -= tmp / (dx * dx) 
+                    cur = cellNum((row, col-2)) # i-2, j
+                    A[num][cur] += tmp / (dx * dx)
+                    
+                    cur = cellNum((row+1, col)) # i, j+1
+                    A[num][cur] -= 1.0 / (dy * dy)
+                    cur = cellNum((row-1, col)) # i, j-1
+                    A[num][cur] -= 1.0 / (dy * dy)
+                    continue
+                                          
+                assert (1 == 2), "No formula..."
     return A
 
 def createBC(A):
@@ -125,17 +173,17 @@ if __name__ == "__main__":
         iter += 1
         print("Iteration {0}".format(iter))
         A = createMatrix(Nx, Ny)
-        print("A = \n{0}".format(A))
-        print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
+        #print("A = \n{0}".format(A))
+        #print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
         
         A, b = createBC(A)
         
-        print("A = \n{0}".format(A))
-        print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
-        print("b = \n{0}".format(b))
+        #print("A = \n{0}".format(A))
+        #print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
+        #print("b = \n{0}".format(b))
     
         x = np.linalg.solve(A, b)
-        print("x = \n{0}".format(x))
+        #print("x = \n{0}".format(x))
         
         mx = 0
         for row in range(1, Ny+1):
