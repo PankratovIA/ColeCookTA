@@ -1,13 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy import Symbol, diff
+#from sympy.abc import x
 
 np.set_printoptions(formatter={'float': '{: 0.3f}'.format}, suppress=True)
 
 WIDTH = 1.0
 HEIGTH = 1.0
 
+Vinf = 1.0
+
 Nx = 5
-Ny = 5
+Ny = 7
 SIZE = Nx * Ny
        
 
@@ -20,11 +24,11 @@ phi = np.zeros((Ny+2, Nx+2))
 
 phi = np.random.rand(Ny+2, Nx+2)
 
-DirichletOrNeumann = True # True - Dirichlet, False - Neumann
+DirichletOrNeumann = False # True - Dirichlet, False - Neumann
 
-#for idx in range(len(phi)):
-    #phi[idx] = sorted(phi[idx], reverse = True)
-    #phi[idx] = sorted(phi[idx])
+for idx in range(len(phi)):
+     phi[idx] = sorted(phi[idx], reverse = True)
+#     phi[idx] = sorted(phi[idx])
     
 
 def cellNum(t):
@@ -53,7 +57,7 @@ def createMatrix(Nx, Ny):
                 phi_xb = (phi[row][col] - phi[row][col-2]) / (2 * dx)
                 #print("phi_xb =", phi_xb)
                 
-                if (phi_xc <= 0) & (phi_xb <= 0):
+                if ((phi_xc <= 0) & (phi_xb <= 0)) | ((min(row, col) <= 2) & 0):
                     # elliptic (5.4.6)
                     # print(row, col, "elliptic (5.4.6)")
                     first = map(cellNum, [(row, col+1), (row, col-1)])
@@ -121,6 +125,61 @@ def createBC(A):
         return createBCDirichlet(A)
     return createBCNeumann(A)
     
+def createBCNeumann(A):
+    def f():
+        x, y = Symbol('x'), Symbol('y')
+        idx = [(Ny // 3) + 1, Ny // 2, Ny - (Ny // 3) - 1]
+        print(idx)
+        coord = [cur * dx for cur in idx]
+        A = np.zeros((3, 3))
+        for row in range(3):
+            A[row] = np.array([coord[row] ** 2, coord[row], 1])
+        B = np.array([[0], [dy/2], [0]])
+        print(A)
+        # A *[a, b, c]^T = B
+        print("x =", x, type(x))
+        a, b, c = np.linalg.solve(A, B)
+        f = a * x**2 + b * x + c
+        print(f[0], type(f))
+        return diff(f,x)
+        
+    def df(func):
+        print(func)
+        return diff(func, Symbol('x'))
+        
+    b = np.zeros((SIZE, 1))
+    print(SIZE)
+    print(A)
+    for col in range(1, Nx+1):
+        # dphi / dy (x, 0) = 0
+        num, numUp = cellNum((1, col)), cellNum((2, col))
+        A[num] = np.zeros((1, SIZE))
+        A[num][numUp] = 1.0
+        A[num][num] = -1.0
+        b[num] = 0.0
+            
+        # dphi / dy (x, b) = 0
+        num, numDown = cellNum((Ny, col)), cellNum((Ny-1, col))
+        A[num] = np.zeros((1, SIZE))
+        A[num][num] = 1.0
+        A[num][numDown] = -1.0
+        b[num] = 0.0
+
+    for row in range(1, Ny+1):
+        # dphi / dx (0, y) = Vinf
+        num, numRight = cellNum((row, 1)), cellNum((row, 2))
+        A[num] = np.zeros((1, SIZE))
+        A[num][numRight] = 1.0
+        A[num][num] = -1.0
+        b[num] = Vinf
+           
+        # dphi / dx (a, y) = Vinf
+        num, numLeft = cellNum((row, Nx)), cellNum((row, Nx-1))
+        A[num] = np.zeros((1, SIZE))
+        A[num][num] = 1.0
+        A[num][numLeft] = -1.0
+        b[num] = Vinf
+    return (A, b)
 
 def createBCDirichlet(A):
     b = np.zeros((SIZE, 1))
@@ -155,28 +214,32 @@ def onBoundary(row, col):
     return (min(row, col) == 1) | (row == Ny) | (col == Nx)
 
 if __name__ == "__main__":
+    #print(createBCNeumann([]))
+    #exit(0)
+    
     print("FDM Transonic steady flow")
     print("dx = {0}".format(dx, "%f0.3"))
     print("dy = {0}".format(dy, "%f0.3"))
     print("phi = \n{0}".format(phi))
-    print("BC >>>")
-    for i in range(1, Ny+1):
-        phi[i][1] = 1.0
-        phi[i][Nx] = 0.0
+    if DirichletOrNeumann:
+        print("BC >>>")
+        for i in range(1, Ny+1):
+            phi[i][1] = 1.0
+            phi[i][Nx] = 0.0
         
-    for i in range(2, Nx+2):
-        phi[1][i] = 0.0
-        phi[Ny][i] = 0.0
+        for i in range(2, Nx+2):
+            phi[1][i] = 0.0
+            phi[Ny][i] = 0.0
 
-    for i in range(1, Ny+1):
-        phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
-        phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
+        for i in range(1, Ny+1):
+            phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
+            phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
         
-    for i in range(1, Nx+2):
-        phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
-        phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
-    print("phi = \n{0}".format(phi))
-    print("BC <<<")
+        for i in range(1, Nx+2):
+            phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
+            phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
+        print("phi = \n{0}".format(phi))
+        print("BC <<<")
     
     iter = 0
     while 1:
@@ -226,9 +289,9 @@ if __name__ == "__main__":
         
     print(dx, dy)
     
-    x = np.arange(0, 1+dx/2, dx)
-    y = np.arange(0, 1+dy/2, dy)
-    X, Y = np.meshgrid(x, y)    
+    pX = np.arange(0, 1+dx/2, dx)
+    pY = np.arange(0, 1+dy/2, dy)
+    X, Y = np.meshgrid(pX, pY)    
     cs = plt.contour(X, Y, ans)
     
     #plt.yticks(range(-5, 5, 1))
