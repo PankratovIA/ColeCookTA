@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
 np.set_printoptions(formatter={'float': '{: 0.3f}'.format}, suppress=True)
 
 WIDTH = 1.0
@@ -9,14 +11,16 @@ Ny = 5
 SIZE = Nx * Ny
        
 
-dx = WIDTH / Nx
-dy = HEIGTH / Ny
+dx = WIDTH / (Nx - 1)
+dy = HEIGTH / (Ny - 1)
 
 eps = 1e-9
 
 phi = np.zeros((Ny+2, Nx+2))
 
 phi = np.random.rand(Ny+2, Nx+2)
+
+DirichletOrNeumann = True # True - Dirichlet, False - Neumann
 
 #for idx in range(len(phi)):
     #phi[idx] = sorted(phi[idx], reverse = True)
@@ -113,6 +117,12 @@ def createMatrix(Nx, Ny):
     return A
 
 def createBC(A):
+    if DirichletOrNeumann:
+        return createBCDirichlet(A)
+    return createBCNeumann(A)
+    
+
+def createBCDirichlet(A):
     b = np.zeros((SIZE, 1))
     for col in range(1, Nx+1):
         # phi(x, 0) = 0
@@ -192,21 +202,37 @@ if __name__ == "__main__":
                 diff = abs(phi[row][col] - x[num])
                 mx = max(mx, diff)
                 phi[row][col] = x[num]
-        print("BC >>>")
-        for i in range(1, Ny+1):
-            phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
-            phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
-        
-        for i in range(1, Nx+2):
-            phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
-            phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
-        print("phi = \n{0}".format(phi))
-        print("BC <<<")
+        # print("BC >>>")
+        # print("phi = \n{0}".format(phi))
+        # for i in range(1, Ny+1):
+        #     phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
+        #     phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
+        # 
+        # for i in range(1, Nx+2):
+        #     phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
+        #     phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
+        # print("phi = \n{0}".format(phi))
+        # print("BC <<<")
         print("mx = {0}".format(mx, "%.3f"))
         if mx < eps:
             break
     print("iter = ", iter)
     #print("Result phi = \n{0}".format(phi))
     print("Result phi")
+    ans = []
     for row in phi[1:-1:]:
         print(row[1:-1:])
+        ans.append(row[1:-1:])
+        
+    print(dx, dy)
+    
+    x = np.arange(0, 1+dx/2, dx)
+    y = np.arange(0, 1+dy/2, dy)
+    X, Y = np.meshgrid(x, y)    
+    cs = plt.contour(X, Y, ans)
+    
+    #plt.yticks(range(-5, 5, 1))
+    #plt.xticks(range(-5, 5, 1))
+    plt.grid(True)
+    plt.clabel(cs)
+    plt.show()
