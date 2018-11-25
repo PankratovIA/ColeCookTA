@@ -10,7 +10,7 @@ HEIGTH = 1.0
 
 Vinf = 1.0
 
-Nx = 5
+Nx = 12
 Ny = 7
 SIZE = Nx * Ny
        
@@ -43,7 +43,7 @@ def cellNum(t):
 def createMatrix(Nx, Ny):
     #size = Nx * Ny
     print("SIZE = ", SIZE)
-    A = 2* np.eye(SIZE)
+    # A = 2* np.eye(SIZE)
     A = np.zeros((SIZE, SIZE))
     for row in range(1, Ny):
         for col in range(1, Nx):
@@ -128,25 +128,31 @@ def createBC(A):
 def createBCNeumann(A):
     def f():
         x, y = Symbol('x'), Symbol('y')
-        idx = [(Ny // 3) + 1, Ny // 2, Ny - (Ny // 3) - 1]
+        idx = [(Nx // 3) + 1, Nx // 2, Nx - (Nx // 3) - 1]
         print(idx)
         coord = [cur * dx for cur in idx]
         A = np.zeros((3, 3))
         for row in range(3):
             A[row] = np.array([coord[row] ** 2, coord[row], 1])
         B = np.array([[0], [dy/2], [0]])
-        print(A)
+        #print(A)
         # A *[a, b, c]^T = B
-        print("x =", x, type(x))
+        #print("x =", x, type(x))
         a, b, c = np.linalg.solve(A, B)
-        f = a * x**2 + b * x + c
-        print(f[0], type(f))
-        return diff(f,x)
+        #res = np.linalg.solve(A, B)
+        #print(a, b, c)
+        #print(res)
+        f = a[0] * x**2 + b[0] * x + c[0]
+        #print(f, type(f))
+        #print(f[0], type(f))
+        return f
         
     def df(func):
         print(func)
-        return diff(func, Symbol('x'))
-        
+        return func.diff(Symbol('x'))
+    
+    print(df(f()))
+    #return
     b = np.zeros((SIZE, 1))
     print(SIZE)
     print(A)
