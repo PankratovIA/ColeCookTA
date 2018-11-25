@@ -5,13 +5,13 @@ from sympy import Symbol, diff
 
 np.set_printoptions(formatter={'float': '{: 0.3f}'.format}, suppress=True)
 
-WIDTH = 1.0
+WIDTH = 1.0 
 HEIGTH = 1.0
 
 Vinf = 1.0
 
-Nx = 12
-Ny = 7
+Nx = 11
+Ny = 11
 SIZE = Nx * Ny
        
 
@@ -24,11 +24,11 @@ phi = np.zeros((Ny+2, Nx+2))
 
 phi = np.random.rand(Ny+2, Nx+2)
 
-DirichletOrNeumann = False # True - Dirichlet, False - Neumann
+DirichletOrNeumann = True # True - Dirichlet, False - Neumann
 
-for idx in range(len(phi)):
-     phi[idx] = sorted(phi[idx], reverse = True)
-#     phi[idx] = sorted(phi[idx])
+# for idx in range(len(phi)):
+#      phi[idx] = sorted(phi[idx], reverse = True)
+#      phi[idx] = sorted(phi[idx])
     
 
 def cellNum(t):
@@ -45,6 +45,7 @@ def createMatrix(Nx, Ny):
     print("SIZE = ", SIZE)
     # A = 2* np.eye(SIZE)
     A = np.zeros((SIZE, SIZE))
+    b = np.zeros((SIZE, 1))
     for row in range(1, Ny):
         for col in range(1, Nx):
             if not onBoundary(row, col):
@@ -57,7 +58,7 @@ def createMatrix(Nx, Ny):
                 phi_xb = (phi[row][col] - phi[row][col-2]) / (2 * dx)
                 #print("phi_xb =", phi_xb)
                 
-                if ((phi_xc <= 0) & (phi_xb <= 0)) | ((min(row, col) <= 2) & 0):
+                if (phi_xc <= 0) & (phi_xb <= 0):
                     # elliptic (5.4.6)
                     # print(row, col, "elliptic (5.4.6)")
                     first = map(cellNum, [(row, col+1), (row, col-1)])
@@ -78,8 +79,13 @@ def createMatrix(Nx, Ny):
                     A[num][num] += phi_xb / (dx * dx) + 2.0 / (dy * dy) # i, j
                     cur = cellNum((row, col-1)) # i-1, j
                     A[num][cur] -= 2.0 * phi_xb / (dx * dx)
-                    cur = cellNum((row, col-2)) # i-2, j
-                    A[num][cur] += phi_xb / (dx * dx)
+                    
+                    if col > 2:
+                        cur = cellNum((row, col-2)) # i-2, j
+                        A[num][cur] += phi_xb / (dx * dx)
+                    else:
+                        b[num] -= phi_xb * phi[row][col-2] / (dx * dx)
+                        
                     cur = cellNum((row+1, col)) # i, j+1
                     A[num][cur] -= 1.0 / (dy * dy)
                     cur = cellNum((row-1, col)) # i, j-1
@@ -107,9 +113,13 @@ def createMatrix(Nx, Ny):
                     A[num][cur] += tmp / (dx * dx)
                     A[num][num] += -tmp / (dx * dx) + 2.0 / (dy * dy) # i,j
                     cur = cellNum((row, col-1)) # i-1, j
-                    A[num][cur] -= tmp / (dx * dx) 
-                    cur = cellNum((row, col-2)) # i-2, j
-                    A[num][cur] += tmp / (dx * dx)
+                    A[num][cur] -= tmp / (dx * dx)
+                    
+                    if col > 2:
+                        cur = cellNum((row, col-2)) # i-2, j
+                        A[num][cur] += tmp / (dx * dx)
+                    else:
+                        b[num] -= tmp / (dx * dx)
                     
                     cur = cellNum((row+1, col)) # i, j+1
                     A[num][cur] -= 1.0 / (dy * dy)
@@ -118,14 +128,14 @@ def createMatrix(Nx, Ny):
                     continue
                                           
                 assert (1 == 2), "No formula..."
-    return A
+    return (A, b)
 
-def createBC(A):
+def createBC(A, b):
     if DirichletOrNeumann:
-        return createBCDirichlet(A)
-    return createBCNeumann(A)
+        return createBCDirichlet(A, b)
+    return createBCNeumann(A, b)
     
-def createBCNeumann(A):
+def createBCNeumann(A, b):
     def f():
         x, y = Symbol('x'), Symbol('y')
         idx = [(Nx // 3) + 1, Nx // 2, Nx - (Nx // 3) - 1]
@@ -153,7 +163,7 @@ def createBCNeumann(A):
     
     print(df(f()))
     #return
-    b = np.zeros((SIZE, 1))
+    #b = np.zeros((SIZE, 1)) # b is a parameter
     print(SIZE)
     print(A)
     for col in range(1, Nx+1):
@@ -187,8 +197,8 @@ def createBCNeumann(A):
         b[num] = Vinf
     return (A, b)
 
-def createBCDirichlet(A):
-    b = np.zeros((SIZE, 1))
+def createBCDirichlet(A, b):
+    # b = np.zeros((SIZE, 1))
     for col in range(1, Nx+1):
         # phi(x, 0) = 0
         num = cellNum((1, col))
@@ -237,25 +247,35 @@ if __name__ == "__main__":
             phi[1][i] = 0.0
             phi[Ny][i] = 0.0
 
-        for i in range(1, Ny+1):
-            phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
-            phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
-        
-        for i in range(1, Nx+2):
-            phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
-            phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
+        # for i in range(1, Ny+1):
+        #     phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
+        #     phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
+        # 
+        # for i in range(1, Nx+2):
+        #     phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
+        #     phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
         print("phi = \n{0}".format(phi))
         print("BC <<<")
-    
+        
+    print("phi = \n{0}".format(phi))
+    for i in range(1, Ny+1):
+        phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
+        phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
+        
+    for i in range(1, Nx+2):
+        phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
+        phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
+    print("phi = \n{0}".format(phi))
+    #exit(0)
     iter = 0
     while 1:
         iter += 1
         print("Iteration {0}".format(iter))
-        A = createMatrix(Nx, Ny)
+        A, b = createMatrix(Nx, Ny)
         #print("A = \n{0}".format(A))
         #print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
         
-        A, b = createBC(A)
+        A, b = createBC(A, b)
         
         #print("A = \n{0}".format(A))
         #print("det( A ) = {0:0.3f}".format(np.linalg.det(A)))
@@ -271,17 +291,17 @@ if __name__ == "__main__":
                 diff = abs(phi[row][col] - x[num])
                 mx = max(mx, diff)
                 phi[row][col] = x[num]
-        # print("BC >>>")
-        # print("phi = \n{0}".format(phi))
-        # for i in range(1, Ny+1):
-        #     phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
-        #     phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
-        # 
-        # for i in range(1, Nx+2):
-        #     phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
-        #     phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
-        # print("phi = \n{0}".format(phi))
-        # print("BC <<<")
+        print("BC first/last row/col>>>")
+        #print("phi = \n{0}".format(phi))
+        for i in range(1, Ny+1):
+            phi[i][0] = phi[i][1] - (phi[i][2] - phi[i][1]) 
+            phi[i][Nx+1] = phi[i][Nx] - (phi[i][Nx-1] - phi[i][Nx]) 
+        
+        for i in range(1, Nx+2):
+            phi[0][i] = phi[1][i] - (phi[2][i] - phi[1][i]) 
+            phi[Ny+1][i] = phi[Ny][i] - (phi[Ny - 1][i] - phi[Ny][i])
+        #print("phi = \n{0}".format(phi))
+        print("BC first/last row/col <<<")
         print("mx = {0}".format(mx, "%.3f"))
         if mx < eps:
             break
