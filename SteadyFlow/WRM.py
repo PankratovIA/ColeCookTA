@@ -29,7 +29,7 @@ def N(m):
     
 def phi(a):
     #print(a, len(a))
-    assert(len(a) == M)
+    #assert(len(a) == M)
     ans = psi()
     for idx, cur in enumerate(a):
         ans += cur * N(idx+1)
