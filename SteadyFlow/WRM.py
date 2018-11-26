@@ -95,7 +95,7 @@ if __name__ == "__main__":
             print("F = \n", F)
     
     print("K = \n", K)
-    print("det(K) = \n", det(K))
+    print("det(K) = \n", np.linalg.det(K))
     print("F = \n", F)
     
     a = np.linalg.solve(K, F)
