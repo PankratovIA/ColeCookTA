@@ -10,8 +10,8 @@ HEIGTH = 1.0
 
 Vinf = 1.0
 
-Nx = 11
-Ny = 11
+Nx = 8
+Ny = 8
 SIZE = Nx * Ny
        
 
@@ -24,7 +24,7 @@ phi = np.zeros((Ny+2, Nx+2))
 
 phi = np.random.rand(Ny+2, Nx+2)
 
-DirichletOrNeumann = True # True - Dirichlet, False - Neumann
+DirichletOrNeumann = False # True - Dirichlet, False - Neumann
 
 # for idx in range(len(phi)):
 #      phi[idx] = sorted(phi[idx], reverse = True)
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     print("phi = \n{0}".format(phi))
     #exit(0)
     iter = 0
-    while 1:
+    while iter < 20:
         iter += 1
         print("Iteration {0}".format(iter))
         A, b = createMatrix(Nx, Ny)
