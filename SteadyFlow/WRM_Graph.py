@@ -4,14 +4,19 @@ import matplotlib.pyplot as plt
 
 M = 2
 
-a = np.array([-0.00809222859605956, -1.0144816987212e-5])
+a = np.array([-0.168580646613524, 4.48591275435969e-17])
 
-a = np.array([-0.00809179468346368, 9.17361370121491e-6, 0.00213799041608868])
+a = np.array([-1.33451781e-01, 5.00999217e-17,  3.87752892e-02])
+
+#a = np.array([ 0.07395811, -0.05404956, -0.00071295])
 
 #a = np.array([0, 0])
 
 def phi_calc(a, px, py):
     return phi(a).subs(x, px).subs(y, py)
+
+def dphiY_calc(a, px, py):
+    return phi(a).diff(y).subs(x, px).subs(y, py)
 
 if __name__ == "__main__":
     print("WRM Graph")
@@ -35,3 +40,17 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.clabel(cs)
     plt.show()
+    
+    
+    ans = []
+    for curX in pX:
+        ans.append(dphiY_calc(a, curX, dy))
+        
+    cs = plt.plot(pX, ans)
+    
+    plt.grid(True)
+    plt.show()
+
+
+    
+    

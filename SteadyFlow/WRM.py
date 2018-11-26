@@ -79,8 +79,10 @@ if __name__ == "__main__":
     airfoil_func = airfoil(LEFT, RIGHT).diff(x)
     print("airfoil_func", airfoil_func)
     
+    a = np.ones(M)
+    
     cnt = 0
-    while cnt < 20:
+    while cnt < 50:
         cnt += 1
         print("Iteration = ", cnt)
         K = np.zeros((M, M))
@@ -94,7 +96,7 @@ if __name__ == "__main__":
             F[s-1] = -integrate(func, (x, LEFT, RIGHT))
             for m in range(1, M+1):
                 print("m = ", m)
-                func = phi(a) * N(m).diff(x).diff(x) - N(m).diff(y).diff(y)
+                func = phi(a).diff(x) * N(m).diff(x).diff(x) - N(m).diff(y).diff(y)
                 func *= N(s)
                 #print(func)
                 K[s-1][m-1] = integrate(func, (x, 0, WIDTH), (y, dy, HEIGTH))
