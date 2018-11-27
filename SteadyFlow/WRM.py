@@ -7,9 +7,9 @@ LEFT = WIDTH / 3.0
 RIGHT = 2.0 * WIDTH / 3.0
 
 
-EPS = 1e-9
+EPS = 1e-6
 
-M = 3
+M = 4
 
 Ny = 100
 
@@ -25,7 +25,8 @@ def psi():
     return Vinf * x
 
 def N(m):
-    return cos(pi * m * x / WIDTH) * cos(pi * m * y / HEIGTH)
+    #return cos(pi * m * x / WIDTH) * cos(pi * m * y / HEIGTH)
+    return (WIDTH * (x**(m+1))/(m+1) - (x**(m+2))/(m+2)) * (((HEIGTH - y)**(m+1))/ (m+1))
     
 def phi(a):
     #print(a, len(a))
@@ -41,7 +42,8 @@ def airfoil(left, right):
     A = np.zeros((3, 3))
     for row in range(3):
         A[row] = np.array([coord[row] ** 2, coord[row], 1])
-    B = np.array([[0], [3*dy/2], [0]])
+    #B = np.array([[dy], [3*dy/2], [dy]])
+    B = np.array([[0], [dy/2], [0]])
     #print(A)
     # A *[a, b, c]^T = B
     #print("x =", x, type(x))
@@ -99,11 +101,13 @@ if __name__ == "__main__":
                 func = phi(a).diff(x) * N(m).diff(x).diff(x) - N(m).diff(y).diff(y)
                 func *= N(s)
                 #print(func)
-                K[s-1][m-1] = integrate(func, (x, 0, WIDTH), (y, dy, HEIGTH))
+                #K[s-1][m-1] = integrate(func, (x, 0, WIDTH), (y, dy, HEIGTH))
+                K[s-1][m-1] = integrate(func, (x, 0, WIDTH), (y, 0, HEIGTH))
             
                 func = N(m).diff(y) * N(s)
                 #print(func)
-                func = func.subs(y, dy)
+                #func = func.subs(y, dy)
+                func = func.subs(y, 0)
                 #print(func)
                 K[s-1][m-1] -= integrate(func, (x, 0, WIDTH))
                 #print("K = \n", K)
