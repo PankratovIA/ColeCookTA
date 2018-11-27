@@ -9,7 +9,7 @@ RIGHT = 2.0 * WIDTH / 3.0
 
 EPS = 1e-6
 
-M = 4
+M = 3
 
 Ny = 100
 
