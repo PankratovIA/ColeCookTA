@@ -8,7 +8,9 @@ if __name__ == "__main__":
     x = np.linspace(0, WIDTH, N)
     print("x = ", x)
     y = np.array(list(map(analytical_solution, x)))
+    par = np.array(list(map(parabola, x)))
     plt.plot(x, y)
+    plt.plot(x, par)
     plt.ylim()
     print(plt.ylim())
     bottom, top = plt.ylim()  # return the current ylim

@@ -24,11 +24,14 @@ dPhi_0 = np.tan(alpha)
 
 Phi_a = 0.8
 
+Nx = 11
+dx = WIDTH / (Nx - 1)
+
 def analytical_solution(x):
     xu = Phi_a - Phi_0 - K * WIDTH / (gamma + 1)
     xu /= (dPhi_0 - K/(gamma+1))
     assert(0<=xu<=WIDTH)
-    print("xu =", xu)
+    #print("xu =", xu)
     
     if x <= xu:
         ans = dPhi_0 * x + Phi_0
@@ -37,6 +40,12 @@ def analytical_solution(x):
     
     return ans
 
+def parabola(x):
+    """
+        First approximation
+    """
+    A_ = (Phi_a - Phi_0 - dPhi_0*WIDTH) / (WIDTH ** 2.0)
+    return A_ * x * x + dPhi_0 * x + Phi_0
 
 if __name__ == "__main__":
     print("FDM 1D")
@@ -46,4 +55,11 @@ if __name__ == "__main__":
     
     p = WIDTH / 2
     print(analytical_solution(p))
+    
+    x = np.linspace(0, WIDTH, Nx)
+    phi = np.array(list(map(parabola, x)))
+    
+    print("x =", x)
+    print("phi =", phi)
+    
     
