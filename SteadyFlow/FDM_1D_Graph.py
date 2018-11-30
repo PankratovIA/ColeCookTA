@@ -20,7 +20,7 @@ if __name__ == "__main__":
     
     phi =  [0.25000,  0.75000,  0.80000]
   
-     
+    phi = [0.25000,  0.58333,  0.64051,  0.80000]
     x = np.linspace(0, WIDTH, len(phi))
     print("x = ", x)
     plt.plot(x, phi, 'o')
