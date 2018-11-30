@@ -24,7 +24,7 @@ dPhi_0 = np.tan(alpha)
 
 Phi_a = 0.8
 
-Nx = 16
+Nx = 3
 dx = WIDTH / (Nx - 1)
 
 dt = 1e-2
@@ -57,61 +57,69 @@ if __name__ == "__main__":
     print("K =", K)
     print("gamma =", gamma)
     
-    p = WIDTH / 2
-    print(analytical_solution(p))
-    
     x = np.linspace(0, WIDTH, Nx)
-    phi = np.array(list(map(parabola, x)))
+    phi_prev = phi = np.array(list(map(parabola, x)))
     
     print("x =", x)
     print("phi =", phi)
     
-    phi[1] = phi[0] + dPhi_0 * dx
-    phi[-1] = Phi_a
-    
-    print("dphi = ", [(x[1] - x[0]) / dx for x in zip(phi, phi[1:])])
+    #phi[1] = phi[0] + dPhi_0 * dx
+    #phi[-1] = Phi_a
     
     cnt = 0
-    while cnt < 2000:
+    while cnt < 2:
         cnt += 1
         print("Iteration {0}".format(cnt))
         
         cur = np.zeros(Nx)
         
         mx = 0
+        
+        A = np.zeros((Nx, Nx))
+        b = np.zeros((Nx, 1))
+        A[0][0] = 1.0
+        b[0] = Phi_0
+        
+        #A[1][2] = 1.0 / (2 * dx)
+        #A[1][0] = -1.0 / (2 * dx)
+        
+        A[1][1] = 1.0 / dx
+        A[1][0] = -1.0 / dx
+        
+        
+        b[1] = dPhi_0
+        
+        A[-1][-1] = 1.0
+        b[-1] = Phi_a
+        
+        
         for idx in range(2, Nx-1):
             # phi_x = (phi[idx + 1] - phi[idx - 1]) / (2 * dx)
-            # phi_xx = (phi[idx + 1] - 2.0 * phi[idx] + phi[idx - 1]) / (dx * dx)
+            # phi_xx = (phi[idx + 1] - 2.0 * phi[idx] + phi[idx - 1])
             # cur[idx] = phi[idx] + dt * phi_xx * (K - (gamma + 1) * phi_x)
             
-            # Blinkov Yu.A., p. 157
-            first = 0
             tmp = phi[idx + 1] - 2 * phi[idx] + phi[idx - 1]
             tmp2 = (phi[idx] - 2 * phi[idx - 1] + phi[idx - 2])
             
-            first += tmp * tmp2 * K
-            first -= tmp * tmp2 * \
-            0.5 * (gamma + 1) *(phi[idx + 1] - 1 * phi[idx] + phi[idx - 1] - phi[idx - 2])
             
-            mul = -tmp * tmp2 * 0.5 * (gamma + 1)
+            # Blinkov Yu.A., p. 157
             
-            second = 0 
-            tmp = phi[idx] - 2 * phi[idx - 1] + phi[idx - 2]
-            tmp2 = (phi[idx + 1] - 2 * phi[idx] + phi[idx - 1])
-            
-            second += tmp * tmp2 * K
-            second -= tmp * tmp2 * \
-            0.5 * (gamma + 1) *(phi[idx + 1] - 1 * phi[idx] + phi[idx - 1] - phi[idx - 2])
-            
-            mul += -tmp * tmp2 * 0.5 * (gamma + 1)
-            
-            
-            cur[idx] = phi[idx] + dt * (first + second) / dx
-            #cur[idx] = (first + second) * mul
-            
-            mx = max(mx, abs(cur[idx] - phi[idx]))
+            pass
         
-        phi[2: Nx-1] = cur[2: Nx-1]
+        print("A =", A)
+        print("b =", b)
+        
+        cur = np.linalg.solve(A, b)
+        
+        cur = cur.reshape(Nx)
+        
+        print("cur =", cur)
+        print("phi =", phi)
+        print("cur - phi =", cur - phi)
+        
+        mx = max(map(abs, cur - phi))
+        
+        phi = cur
 
         print("mx = {0}".format(mx, "%.3f"))
         print("phi =", phi)
