@@ -22,6 +22,7 @@ if __name__ == "__main__":
     x = np.linspace(0, WIDTH, len(phi))
     print("x = ", x)
     plt.plot(x, phi, 'o')
+    plt.grid()
     
     plt.ylim()
     print(plt.ylim())
