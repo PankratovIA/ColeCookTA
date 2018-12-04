@@ -67,7 +67,7 @@ if __name__ == "__main__":
     #phi[-1] = Phi_a
     
     cnt = 0
-    while cnt <50:
+    while cnt <1:
         cnt += 1
         print("Iteration {0}".format(cnt))
         
@@ -78,19 +78,16 @@ if __name__ == "__main__":
         A = np.zeros((Nx, Nx))
         b = np.zeros((Nx, 1))
         A[0][0] = 1.0
-        b[0] = Phi_0
+        b[0] = 0
         
         #A[1][2] = 1.0 / (2 * dx)
         #A[1][0] = -1.0 / (2 * dx)
         
         A[1][1] = 1.0 / dx
-        A[1][0] = -1.0 / dx
-        
-        
-        b[1] = dPhi_0
+        b[1] = 0
         
         A[-1][-1] = 1.0
-        b[-1] = Phi_a
+        b[-1] = 0
         
         
         for j in range(2, Nx-1):
@@ -99,16 +96,16 @@ if __name__ == "__main__":
             phi_xx2 = (phi[j] - 2 * phi[j - 1] + phi[j - 2])
             
             b[j] = -phi_xx * (phi_xx2 * (K - 0.5*(gamma+1) *\
-            (phi[j+1] - phi[j] + phi[j-1] - phi[j-2]))*dt/dx-\
-            (-phi[j] +phi[j-2]) - (-2*phi[j-1]+phi_prev[j-1])*dx/(2*dt))
+            (phi[j+1] - phi[j] + phi[j-1] - phi[j-2]))*dt/dx\
+             - (-phi[j-1]+phi_prev[j-1])*dx/(2*dt))
             
             A[j][j] += -phi_xx
             A[j][j-2] += phi_xx
             A[j][j-1] += -phi_xx * dx / (2*dt)
 
             b[j] += -phi_xx2 * (phi_xx * (K - 0.5*(gamma+1) *\
-            (phi[j+1] - phi[j] + phi[j-1] - phi[j-2]))*dt/dx-\
-            (-phi[j+1] +phi[j-1]) - (-2*phi[j]+phi_prev[j])*dx/(2*dt))
+            (phi[j+1] - phi[j] + phi[j-1] - phi[j-2]))*dt/dx\
+            - (-phi[j]+phi_prev[j])*dx/(2*dt))
             
             A[j][j+1] += -phi_xx2
             A[j][j-1] += phi_xx2
@@ -125,10 +122,10 @@ if __name__ == "__main__":
         print("phi =", phi)
         print("cur - phi =", cur - phi)
         
-        mx = max(map(abs, cur - phi))
+        mx = max(map(abs, cur))
         
         phi_prev = phi.copy()
-        phi = cur.copy()
+        phi = phi.copy() + cur.copy()
 
         print("mx = {0}".format(mx, "%.3f"))
         print("phi =", phi)
