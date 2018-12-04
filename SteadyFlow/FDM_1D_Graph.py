@@ -21,6 +21,13 @@ if __name__ == "__main__":
     phi =  [0.25000,  0.75000,  0.80000]
   
     phi = [0.25000,  0.58333,  0.64051,  0.80000]
+    
+    phi = [ 0.2500000,  0.4320000,  0.6140000,  0.7960000,  0.9779998,  0.8000000]
+    phi = [ 0.2500000,  0.4718750,  0.6937495,  0.9156219,  0.8000000]
+    phi = [ 0.2500000,  0.5333333,  0.8166645,  0.8000000]
+    phi = [ 0.2500000,  0.4320000,  0.6140000,  0.7959999,  0.9779974,  0.8000000]
+
+
     x = np.linspace(0, WIDTH, len(phi))
     print("x = ", x)
     plt.plot(x, phi, 'o')
@@ -31,5 +38,6 @@ if __name__ == "__main__":
     bottom, top = plt.ylim()  # return the current ylim
     plt.ylim((0.95*bottom, 1.05*top))   # set the ylim to bottom, top
     plt.show()
+    plt.savefig("1D.png")
     
     

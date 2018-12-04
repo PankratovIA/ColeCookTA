@@ -4,7 +4,7 @@ import numpy as np
 #from sympy.abc import x
 
 
-np.set_printoptions(formatter={'float': '{: 0.5f}'.format}, suppress=True)
+np.set_printoptions(formatter={'float': '{: 0.7f}'.format}, suppress=True)
 
 WIDTH = 1.0 
 
@@ -27,7 +27,7 @@ Phi_a = 0.8
 Nx = 6
 dx = WIDTH / (Nx - 1)
 
-dt = 1e-3
+dt = 1e-4
 
 eps = 1e-9
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     #phi[-1] = Phi_a
     
     cnt = 0
-    while cnt <1:
+    while cnt <50000:
         cnt += 1
         print("Iteration {0}".format(cnt))
         
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         #A[1][2] = 1.0 / (2 * dx)
         #A[1][0] = -1.0 / (2 * dx)
         
-        A[1][1] = 1.0 / dx
+        A[1][1] = 1.0
         b[1] = 0
         
         A[-1][-1] = 1.0
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         
         print("cur =", cur)
         print("phi =", phi)
-        print("cur - phi =", cur - phi)
+        #print("cur - phi =", cur - phi)
         
         mx = max(map(abs, cur))
         
