@@ -12,6 +12,11 @@ Minf = 1.01
 delta = 0.01
 
 K = (1 - Minf**2)*(delta **(-2.0/3))
+#K = 1
+K = np.abs(K)
+K = 0
+print(K)
+#exit(0)
 
 gamma = 7.0/5
 
@@ -27,8 +32,8 @@ Phi_a = 0.8
 Nx = 6
 dx = WIDTH / (Nx - 1)
 
-dt = 1e-4
-#dt = 0.04*dx**2
+dt = 0.5e-4
+dt = 0.04*dx**2
 
 eps = 1e-9
 
@@ -44,6 +49,27 @@ def analytical_solution(x):
         ans = Phi_a + K*(x - WIDTH) / (gamma+1)
     
     return ans
+#K = 1.0
+#gamma = 1.4
+#x_s = 0.61
+#fi_x0 = 0.93
+#assert fi_x0 > K/(gamma+1)
+#fi_x1 = 2*K/(gamma+1) - fi_x0
+
+#def fi(x):
+  #if x <= x_s:
+    #return fi_x0*x
+  #else:
+    #return fi_x0*x_s + fi_x1*(x-x_s)
+
+#a = np.array([[0.25, -0.5, 1.0],
+           #[-1.0,  1.0, 0.0],
+           #[0.25,  0.5, 1.0]])
+#b = np.array([0.0, fi_x0, fi(1.0)])
+#k = np.linalg.solve(a, b)
+
+#def fi_0(x):
+  #return (k[0]*(x-0.5) + k[1])*(x-0.5) + k[2]
 
 def parabola(x):
     """
@@ -51,6 +77,11 @@ def parabola(x):
     """
     A_ = (Phi_a - Phi_0 - dPhi_0*WIDTH) / (WIDTH ** 2.0)
     return A_ * x * x + dPhi_0 * x + Phi_0
+    #return fi_0(x)
+
+#[ 0.0000000  0.1246857  0.2493714  0.3740571  0.4987429  0.5408763
+  #0.5352380  0.5296000]
+
 
 if __name__ == "__main__":
     print("FDM 1D")
@@ -72,7 +103,7 @@ if __name__ == "__main__":
 #   0.7871739  0.8000000]
     
     cnt = 0
-    while cnt <1500:
+    while cnt <150000:
         cnt += 1
         print("Iteration {0}".format(cnt))
         
