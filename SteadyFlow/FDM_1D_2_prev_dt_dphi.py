@@ -28,6 +28,7 @@ Nx = 6
 dx = WIDTH / (Nx - 1)
 
 dt = 1e-4
+#dt = 0.04*dx**2
 
 eps = 1e-9
 
@@ -66,8 +67,12 @@ if __name__ == "__main__":
     #phi[1] = phi[0] + dPhi_0 * dx
     #phi[-1] = Phi_a
     
+#     Result phi = 
+# [ 0.2500000  0.3836735  0.5084070  0.6011152  0.6849887  0.7394815
+#   0.7871739  0.8000000]
+    
     cnt = 0
-    while cnt <50000:
+    while cnt <1500:
         cnt += 1
         print("Iteration {0}".format(cnt))
         
@@ -95,7 +100,7 @@ if __name__ == "__main__":
             phi_xx = phi[j + 1] - 2 * phi[j] + phi[j - 1]
             phi_xx2 = (phi[j] - 2 * phi[j - 1] + phi[j - 2])
             
-            b[j] = -phi_xx * (phi_xx2 * (K - 0.5*(gamma+1) *\
+            b[j] = -phi_xx * (phi_xx2 * (K - (0.5 / dx)*(gamma+1) *\
             (phi[j+1] - phi[j] + phi[j-1] - phi[j-2]))*dt/dx\
              - (-phi[j-1]+phi_prev[j-1])*dx/(2*dt))
             
@@ -103,7 +108,7 @@ if __name__ == "__main__":
             A[j][j-2] += phi_xx
             A[j][j-1] += -phi_xx * dx / (2*dt)
 
-            b[j] += -phi_xx2 * (phi_xx * (K - 0.5*(gamma+1) *\
+            b[j] += -phi_xx2 * (phi_xx * (K - (0.5 / dx)*(gamma+1) *\
             (phi[j+1] - phi[j] + phi[j-1] - phi[j-2]))*dt/dx\
             - (-phi[j]+phi_prev[j])*dx/(2*dt))
             
@@ -111,14 +116,14 @@ if __name__ == "__main__":
             A[j][j-1] += phi_xx2
             A[j][j] += -phi_xx2 * dx / (2*dt)           
         
-        print("A =", A)
-        print("b =", b)
+        #print("A =", A)
+        #print("b =", b)
         
         cur = np.linalg.solve(A, b)
         
         cur = cur.reshape(Nx)
         
-        print("cur =", cur)
+        #print("cur =", cur)
         print("phi =", phi)
         #print("cur - phi =", cur - phi)
         

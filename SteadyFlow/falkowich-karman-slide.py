@@ -103,7 +103,7 @@ for i in range(10000):
   f0 = f1
   f1 = f2
   if i % 500 == 0:
-    print i
+    #print i
     g = graph.graphxy(width=8, x=graph.axis.linear(title=r"$x$", min=0.0, max=1.0),\
                               y=graph.axis.linear(title=r"$\varphi(x)$"))
     g.plot(graph.data.function("y(x)=fi(x)", context=locals()))
